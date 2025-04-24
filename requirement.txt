@@ -1,0 +1,9 @@
+# Libs
+# Framework para criação de APIs modernas, rápidas e simples com Python
+fastapi
+
+# Servidor ASGI leve e rápido, usado para rodar aplicações FastAPI
+uvicorn
+
+# Cliente Redis para Python (usado para conectar com o serviço de cache Redis)
+redis

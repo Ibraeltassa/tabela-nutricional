@@ -1,9 +1,11 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from config.database import Base, db, SessionLocal
-from service.ingrediente_service import get_ingrediente_by_nome, get_ingredientes
+from model.ingrediente import Ingrediente
+from service.ingrediente_service import get_ingrediente_by_nome, get_ingredientes, get_ingredientes_by_nomes
 from config.cache import get_cache, set_cache
 from scripts.popular_dados import popular_dados_iniciais
+from dto.ingrediente_request import IngredientesRequestDTO
 
 app = FastAPI(
     title="API de Tabela Nutricional",
@@ -51,3 +53,14 @@ def read_ingrediente(nome: str, db: Session = Depends(get_db)):
     if ingrediente is None:
         raise HTTPException(status_code=404, detail="Ingrediente não encontrado")
     return ingrediente
+
+@app.post("/ingredientes/buscar-por-lista")
+def buscar_ingredientes_por_lista(request: IngredientesRequestDTO, db: Session = Depends(get_db)):
+    ingredientes = get_ingredientes_by_nomes(db, request.nomes)
+    
+    ingredientes_dict = [i.__dict__ for i in ingredientes]
+
+    for ingrediente in ingredientes_dict:
+        ingrediente.pop("_sa_instance_state", None)
+
+    return ingredientes_dict

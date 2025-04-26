@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from config.database import Base, db, SessionLocal
 from model.ingrediente import Ingrediente
-from service.ingrediente_service import get_ingrediente_by_nome, get_ingredientes, get_ingredientes_by_nomes
+from service.ingrediente_service import get_ingredientes, get_ingredientes_by_nomes
 from config.cache import get_cache, set_cache
 from scripts.popular_dados import popular_dados_iniciais
 from dto.ingrediente_request import IngredientesRequestDTO
@@ -24,7 +24,7 @@ def get_db():
     finally:
         db_session.close()
 
-# Endpoint que retorna todos os ingredientes
+
 @app.get("/ingredientes")
 def read_ingredientes(db: Session = Depends(get_db)):
     
@@ -32,10 +32,8 @@ def read_ingredientes(db: Session = Depends(get_db)):
     ingredientes_cached = get_cache(cache_key)
     
     if ingredientes_cached:
-        print("Passou pelo cache")
         return ingredientes_cached
-    
-    # Chama a função do serviço que consulta os ingredientes
+
     ingredientes = get_ingredientes(db)
     
     ingredientes_dict = [i.__dict__ for i in ingredientes]
@@ -46,16 +44,17 @@ def read_ingredientes(db: Session = Depends(get_db)):
     
     return ingredientes_dict
 
-
-@app.get("/ingredientes/{nome}")
-def read_ingrediente(nome: str, db: Session = Depends(get_db)):
-    ingrediente = get_ingrediente_by_nome(db, nome)
-    if ingrediente is None:
-        raise HTTPException(status_code=404, detail="Ingrediente não encontrado")
-    return ingrediente
-
 @app.post("/ingredientes/buscar-por-lista")
 def buscar_ingredientes_por_lista(request: IngredientesRequestDTO, db: Session = Depends(get_db)):
+
+    nomes_ordenados = sorted(request.nomes)
+    cache_key = "ingredientes_" + "_".join(nomes_ordenados)
+    ingredientes_cached = get_cache(cache_key)
+
+    if ingredientes_cached:
+        print("Passou pelo cache")
+        return ingredientes_cached
+    
     ingredientes = get_ingredientes_by_nomes(db, request.nomes)
     
     ingredientes_dict = [i.__dict__ for i in ingredientes]
@@ -63,4 +62,5 @@ def buscar_ingredientes_por_lista(request: IngredientesRequestDTO, db: Session =
     for ingrediente in ingredientes_dict:
         ingrediente.pop("_sa_instance_state", None)
 
+    set_cache(cache_key, ingredientes_dict)
     return ingredientes_dict

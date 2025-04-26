@@ -7,3 +7,9 @@ uvicorn
 
 # Cliente Redis para Python (usado para conectar com o serviço de cache Redis)
 redis
+
+# Driver para o banco de Dados PostgreSQL
+psycopg2-binary
+
+# ORM para o Python
+sqlalchemy

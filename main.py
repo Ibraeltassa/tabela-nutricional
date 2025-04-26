@@ -25,6 +25,24 @@ def get_db():
 # Endpoint que retorna todos os ingredientes
 @app.get("/ingredientes")
 def read_ingredientes(db: Session = Depends(get_db)):
+    
+    
+    cache_key = "ingredientes_todos"
+    ingredientes_cached = get_cache(cache_key)
+    
+    if ingredientes_cached:
+        print("Passou pelo cache")
+        return ingredientes_cached
+    
+    
+    
     # Chama a função do serviço que consulta os ingredientes
     ingredientes = get_ingredientes(db)
-    return ingredientes
+    
+    ingredientes_dict = [i.__dict__ for i in ingredientes]
+    for i in ingredientes_dict:
+        i.pop("_sa_instance_state", None)
+    
+    set_cache(cache_key, ingredientes_dict)
+    
+    return ingredientes_dict

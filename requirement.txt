@@ -13,3 +13,6 @@ psycopg2-binary
 
 # ORM para o Python
 sqlalchemy
+
+# Redis para cache
+redis

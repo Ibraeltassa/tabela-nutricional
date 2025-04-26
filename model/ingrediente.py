@@ -1,10 +1,10 @@
-from pydantic import BaseModel
 from config.database import Base
 from sqlalchemy import Column, Integer, String, Float
 
+
 class Ingrediente(Base):
     __tablename__ = "tb_ingredientes"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String, nullable=False)
     calorias = Column(Float)
@@ -20,4 +20,3 @@ class Ingrediente(Base):
         self.carboidratos = carboidratos
         self.gorduras = gorduras
         self.quantidade_base = quantidade_base
-

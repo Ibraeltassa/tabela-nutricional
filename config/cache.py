@@ -1,7 +1,7 @@
 import redis
 import json
 
-redis_client = redis.Redis(host="localhost", port=6379, db=0)
+redis_client = redis.Redis(host="tb-nutricional-cache", port=6379, db=0)
 
 def get_cache(key: str):
     value = redis_client.get(key)

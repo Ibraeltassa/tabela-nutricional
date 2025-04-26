@@ -1,7 +1,7 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from config.database import Base, db, SessionLocal
-from service.ingrediente_service import get_ingredientes
+from service.ingrediente_service import get_ingrediente_by_nome, get_ingredientes
 from config.cache import get_cache, set_cache
 from scripts.popular_dados import popular_dados_iniciais
 
@@ -26,15 +26,12 @@ def get_db():
 @app.get("/ingredientes")
 def read_ingredientes(db: Session = Depends(get_db)):
     
-    
     cache_key = "ingredientes_todos"
     ingredientes_cached = get_cache(cache_key)
     
     if ingredientes_cached:
         print("Passou pelo cache")
         return ingredientes_cached
-    
-    
     
     # Chama a função do serviço que consulta os ingredientes
     ingredientes = get_ingredientes(db)
@@ -46,3 +43,11 @@ def read_ingredientes(db: Session = Depends(get_db)):
     set_cache(cache_key, ingredientes_dict)
     
     return ingredientes_dict
+
+
+@app.get("/ingredientes/{nome}")
+def read_ingrediente(nome: str, db: Session = Depends(get_db)):
+    ingrediente = get_ingrediente_by_nome(db, nome)
+    if ingrediente is None:
+        raise HTTPException(status_code=404, detail="Ingrediente não encontrado")
+    return ingrediente
